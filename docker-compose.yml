@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  mongo:
+    container_name: mongo
+    image: 'mongo'
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "27017:27017"
+    networks:
+      - mern-app
+    volumes:
+      - mongo-data:/data/db
+  react-app:
+    container_name: react-app
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app/frontend 
+    networks:
+      - mern-app
+    stdin_open: true
+    tty: true
+    depends_on:
+      - express-app
+  express-app:
+    container_name: express-app
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      - mongo
+    networks:
+      - mern-app
+networks:
+  mern-app:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
